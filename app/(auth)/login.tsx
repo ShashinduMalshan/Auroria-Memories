@@ -23,9 +23,11 @@ const Login = () => {
         try {
             await login(email, password);
             alert("Login successful");
-            // router.replace('/home');
-        } catch {
-            alert("Login failed");
+            console.log('Logged in successfully');
+            router.replace('/home');
+        } catch (error: any) {
+            console.log("Login error:", error?.code, error?.message);
+            alert(error?.message ?? "Login failed");
         } finally {
             hideLoader();
         }
@@ -50,7 +52,7 @@ const Login = () => {
                         placeholder="Email"
                         placeholderTextColor="#6B7280"
                         className="border border-gray-300 rounded-lg px-4 py-2 mb-4"
-                        
+
                     />
 
                     <TextInput
@@ -77,7 +79,7 @@ const Login = () => {
                         </Text>
 
                         <TouchableOpacity onPress={() =>
-                           {}}>
+                            router.replace("/register")}>
                             <Text className="text-blue-600 font-semibold">
                                 Register
                             </Text>

@@ -35,11 +35,13 @@ export default function Register() {
 
       await registation(fullName, email, password);
       alert("Registration successful");
-
-      // router.replace("login");
-    } catch (error) {
-      alert("Registration failed");
-    }finally {
+      router.replace("/login");
+      
+    } catch (error: any) {
+      console.log("Registration error:", error?.code, error?.message);
+      alert(error?.message ?? "Registration failed");
+    }
+    finally {
       hideLoader();
     }
   };
@@ -102,7 +104,7 @@ export default function Register() {
             Already have an account?
           </Text>
 
-          <TouchableOpacity onPress={() =>{}}>
+          <TouchableOpacity onPress={() => router.replace("/login")}>
             <Text className="text-blue-600 font-semibold">
               Login
             </Text>
