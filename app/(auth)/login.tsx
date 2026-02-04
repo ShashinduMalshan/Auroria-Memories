@@ -24,7 +24,6 @@ const LoginScreen = () => {
         showLoader();
         try {
             await login(email, password);
-            alert("Login successful");
             console.log('Logged in successfully');
             router.replace('/home');
         } catch (error) {

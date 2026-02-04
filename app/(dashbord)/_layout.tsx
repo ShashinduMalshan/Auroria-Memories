@@ -4,7 +4,7 @@ import { useLock } from "@/context/LockContext";
 
 const tabs = [
   { name: "home", icon: "home", title: "Home" },
-  { name: "bookmark", icon: "bookmark", title: "Bookmark" },
+  { name: "save", icon: "bookmark-border", title: "Save" },
   { name: "news", icon: "article", title: "News" },
   { name: "profile", icon: "person", title: "Profile" },
 ] as const;
@@ -12,7 +12,7 @@ const tabs = [
 const DashboardLayout = () => {
   const { locked } = useLock();
 
-  //  Block dashboard when locked
+  // 🔐 Block dashboard when locked
   if (locked) {
     return <Redirect href="/lock" />;
   }
