@@ -1,54 +1,19 @@
 import { useRouter } from 'expo-router';
-import React, { useRef } from 'react';
-import { 
-    Animated, 
-    Keyboard, 
-    Pressable, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    TouchableWithoutFeedback, 
-    View,
-    Dimensions,
-    StatusBar
-} from 'react-native';
+import React from 'react';
+import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLoader } from '../../hooks/useLoder';
 import { login } from '../../service/authService';
-import { LinearGradient } from 'expo-linear-gradient';
 
-
-const Login = () => {
+const LoginScreen = () => {
     const router = useRouter();
+
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
+    const [emailFocused, setEmailFocused] = React.useState(false);
+    const [passwordFocused, setPasswordFocused] = React.useState(false);
+
     const { showLoader, hideLoader } = useLoader();
-
-    // Animation values
-    const fadeAnim = useRef(new Animated.Value(0)).current;
-    const slideAnim = useRef(new Animated.Value(50)).current;
-    const scaleAnim = useRef(new Animated.Value(0.9)).current;
-
-    React.useEffect(() => {
-        Animated.parallel([
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 800,
-                useNativeDriver: true,
-            }),
-            Animated.spring(slideAnim, {
-                toValue: 0,
-                tension: 20,
-                friction: 7,
-                useNativeDriver: true,
-            }),
-            Animated.spring(scaleAnim, {
-                toValue: 1,
-                tension: 20,
-                friction: 7,
-                useNativeDriver: true,
-            }),
-        ]).start();
-    }, []);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -62,9 +27,10 @@ const Login = () => {
             alert("Login successful");
             console.log('Logged in successfully');
             router.replace('/home');
-        } catch (error: any) {
-            console.log("Login error:", error?.code, error?.message);
-            alert(error?.message ?? "Login failed");
+        } catch (error) {
+            const err = error as any;
+            console.log("Login error:", err?.code , err?.message);
+            alert(err?.message ?? "Login failed");
         } finally {
             hideLoader();
         }
@@ -72,143 +38,125 @@ const Login = () => {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <View className="flex-1 bg-slate-950">
-                <StatusBar barStyle="light-content" />
-                
-                {/* Animated Background Gradient */}
-                <View className="absolute inset-0">
-                    <LinearGradient
-                        colors={['#0f172a', '#1e1b4b', '#312e81', '#1e1b4b', '#0f172a']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        className="flex-1"
-                    />
-                    
-                    {/* Floating Orbs */}
-                    <View className="absolute top-20 left-10 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl" />
-                    <View className="absolute bottom-40 right-0 w-80 h-80 bg-fuchsia-500/20 rounded-full blur-3xl" />
-                    <View className="absolute top-60 right-20 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl" />
-                </View>
-
-                <Animated.View 
-                    className="flex-1 justify-center items-center px-6"
-                    style={{
-                        opacity: fadeAnim,
-                        transform: [
-                            { translateY: slideAnim },
-                            { scale: scaleAnim }
-                        ]
-                    }}
-                >
-                    {/* Logo/Brand Section */}
-                    <View className="mb-12">
-                        <Text className="text-5xl font-bold text-center mb-3 tracking-tight">
-                            <Text className="text-white">Auroria</Text>
+            <LinearGradient
+                colors={['#F0F4FF', '#F9FAFB', '#FFFFFF']}
+                className="flex-1"
+            >
+                <View className="flex-1 justify-center items-center px-6">
+                    {/* Abstract Emotional Shape */}
+                    <View className="mb-12 items-center">
+                        <View className="w-20 h-20 bg-purple-100 rounded-full opacity-40 absolute -top-4 -left-8" />
+                        <View className="w-16 h-16 bg-blue-100 rounded-full opacity-50 absolute top-2 left-12" />
+                        
+                        {/* Greeting */}
+                        <Text className="text-3xl font-semibold text-gray-800 mb-2 mt-16">
+                            Welcome back 🌱
                         </Text>
-                        <Text className="text-violet-300 text-center text-base tracking-[0.3em] uppercase">
-                            Memories
+                        <Text className="text-base text-gray-500 font-normal">
+                            Your thoughts are safe here
                         </Text>
-                        <View className="h-px w-32 bg-gradient-to-r from-transparent via-violet-400 to-transparent mx-auto mt-4" />
                     </View>
 
-                    {/* Glass Card */}
-                    <View className="w-full max-w-md">
-                        <View className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
-                            
-                            <Text className="text-3xl font-semibold text-white mb-2 tracking-tight">
-                                Welcome Back
+                    {/* Login Card */}
+                    <View className="w-full bg-white rounded-3xl p-8 shadow-sm" style={{
+                        shadowColor: '#8B9FD9',
+                        shadowOffset: { width: 0, height: 8 },
+                        shadowOpacity: 0.12,
+                        shadowRadius: 24,
+                        elevation: 8
+                    }}>
+                        {/* Email Input */}
+                        <View className="mb-5">
+                            <Text className="text-xs font-medium text-gray-600 mb-2 ml-1">
+                                Email
                             </Text>
-                            <Text className="text-violet-200/70 mb-8 text-sm">
-                                Sign in to continue your journey
+                            <TextInput
+                                value={email}
+                                onChangeText={setEmail}
+                                placeholder="you@example.com"
+                                placeholderTextColor="#9CA3AF"
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                onFocus={() => setEmailFocused(true)}
+                                onBlur={() => setEmailFocused(false)}
+                                className={`bg-gray-50 rounded-2xl px-5 py-4 text-gray-800 ${
+                                    emailFocused ? 'border-2 border-purple-300' : 'border border-gray-200'
+                                }`}
+                                style={{
+                                    fontSize: 16,
+                                    fontFamily: 'System'
+                                }}
+                            />
+                        </View>
+
+                        {/* Password Input */}
+                        <View className="mb-8">
+                            <Text className="text-xs font-medium text-gray-600 mb-2 ml-1">
+                                Password
                             </Text>
+                            <TextInput
+                                value={password}
+                                onChangeText={setPassword}
+                                placeholder="Enter your password"
+                                placeholderTextColor="#9CA3AF"
+                                secureTextEntry
+                                onFocus={() => setPasswordFocused(true)}
+                                onBlur={() => setPasswordFocused(false)}
+                                className={`bg-gray-50 rounded-2xl px-5 py-4 text-gray-800 ${
+                                    passwordFocused ? 'border-2 border-purple-300' : 'border border-gray-200'
+                                }`}
+                                style={{
+                                    fontSize: 16,
+                                    fontFamily: 'System'
+                                }}
+                            />
+                        </View>
 
-                            {/* Email Input */}
-                            <View className="mb-5">
-                                <Text className="text-violet-200 text-xs font-medium mb-2 uppercase tracking-wider">
-                                    Email
-                                </Text>
-                                <View className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-                                    <TextInput
-                                        value={email}
-                                        onChangeText={setEmail}
-                                        placeholder="Enter your email"
-                                        placeholderTextColor="rgba(255,255,255,0.3)"
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        className="px-5 py-4 text-white text-base"
-                                    />
-                                </View>
-                            </View>
-
-                            {/* Password Input */}
-                            <View className="mb-8">
-                                <Text className="text-violet-200 text-xs font-medium mb-2 uppercase tracking-wider">
-                                    Password
-                                </Text>
-                                <View className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-                                    <TextInput
-                                        value={password}
-                                        onChangeText={setPassword}
-                                        placeholder="Enter your password"
-                                        placeholderTextColor="rgba(255,255,255,0.3)"
-                                        secureTextEntry
-                                        className="px-5 py-4 text-white text-base"
-                                    />
-                                </View>
-                            </View>
-
-                            {/* Login Button */}
-                            <Pressable
-                                onPress={handleLogin}
-                                className="active:opacity-80"
+                        {/* Login Button */}
+                        <Pressable
+                            onPress={handleLogin}
+                            className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl py-4 items-center mb-4 active:opacity-90"
+                            style={{
+                                shadowColor: '#8B5CF6',
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 12,
+                                elevation: 6
+                            }}
+                        >
+                            <LinearGradient
+                                colors={['#8B5CF6', '#6366F1']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                className="w-full rounded-2xl py-4 items-center"
                             >
-                                <LinearGradient
-                                    colors={['#8b5cf6', '#a855f7', '#d946ef']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    className="py-4 rounded-2xl items-center shadow-lg"
-                                >
-                                    <Text className="text-white font-bold text-base tracking-wide">
-                                        Sign In
-                                    </Text>
-                                </LinearGradient>
-                            </Pressable>
-
-                            {/* Divider */}
-                            <View className="flex-row items-center my-6">
-                                <View className="flex-1 h-px bg-white/10" />
-                                <Text className="text-white/40 mx-4 text-xs">OR</Text>
-                                <View className="flex-1 h-px bg-white/10" />
-                            </View>
-
-                            {/* Register Link */}
-                            <View className="flex-row justify-center items-center">
-                                <Text className="text-violet-200/70 mr-2 text-sm">
-                                    Don't have an account?
+                                <Text className="text-white font-semibold text-base">
+                                    Continue your story
                                 </Text>
-                                <TouchableOpacity onPress={() => router.replace("/register")}>
-                                    <Text className="text-violet-300 font-semibold text-sm">
-                                        Create one
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
+                            </LinearGradient>
+                        </Pressable>
 
-                        </View>
-
-                        {/* Bottom decorative element */}
-                        <View className="items-center mt-6">
-                            <View className="flex-row space-x-2">
-                                <View className="w-2 h-2 rounded-full bg-violet-400/50" />
-                                <View className="w-2 h-2 rounded-full bg-fuchsia-400/50" />
-                                <View className="w-2 h-2 rounded-full bg-indigo-400/50" />
-                            </View>
+                        {/* Register Link */}
+                        <View className="flex-row justify-center items-center mt-2">
+                            <Text className="text-gray-500 text-sm mr-1">
+                                New to Smart Diary?
+                            </Text>
+                            <TouchableOpacity onPress={() => router.replace("/register")}>
+                                <Text className="text-purple-600 font-semibold text-sm">
+                                    Create account
+                                </Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
 
-                </Animated.View>
-            </View>
+                    {/* Bottom Tagline */}
+                    <Text className="text-gray-400 text-xs mt-10 text-center">
+                        A safe space for your thoughts and memories
+                    </Text>
+                </View>
+            </LinearGradient>
         </TouchableWithoutFeedback>
     );
 };
 
-export default Login;
+export default LoginScreen;
