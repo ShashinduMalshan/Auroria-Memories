@@ -3,18 +3,25 @@ import React, { useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
+import { saveMemory } from "@/service/memoryService";
+import { uploadFile } from "@/service/storageService";
+
+
+
 
 
 const moods = [
     { label: "Happy", icon: "sentiment-satisfied", color: "#F59E0B" },
-    { label: "Calm", icon: "sentiment-calm", color: "#10B981" },
+    { label: "Calm", icon: "sentiment-neutral", color: "#10B981" },
     { label: "Sad", icon: "sentiment-dissatisfied", color: "#3B82F6" },
 ];
+
 
 const Save = () => {
     const [text, setText] = useState("");
     const [mood, setMood] = useState<string | null>(null);
-    const [image, setImage] = useState<string | null>(null);
+    const [images, setImages] = useState<string[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
     const [audioURL, setAudioURL] = useState<string | null>(null);
@@ -22,16 +29,19 @@ const Save = () => {
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
             quality: 0.7,
         });
 
+
         if (!result.canceled) {
-            setImage(result.assets[0].uri);
+            const uris = result.assets.map((asset) => asset.uri);
+            setImages((prevImages) => [...prevImages, ...uris]);
         }
     }
 
     const recordAudio = async () => {
+
+        
         try {
             await Audio.requestPermissionsAsync();
             await Audio.setAudioModeAsync({
@@ -56,16 +66,51 @@ const Save = () => {
         setRecording(null);
     }
 
-    const handleSave = () => {
-        console.log({
-            text,
-            image,
-            audioURL,
-            mood,
-        });
+    const handleSave = async () => {
+        if (!text) {
+            alert("Add text, image, or voice to save a memory");
+            return;
+        }
+            setLoading(true);
 
-        // later → saveMemoryToFirebase()
+        try {
+
+            const uploadedImages: string[] = [];
+
+            for (const img of images) {
+                const imageURL = await uploadFile(img, "images");
+                uploadedImages.push(imageURL);
+            }
+
+            // ⬆ Upload audio (if exists)
+            let uploadedAudioURL: string | null = null;
+            if (audioURL) {
+                uploadedAudioURL = await uploadFile(audioURL, "audio");
+            }
+
+            // 💾 Save to Firestore (ONLY URLs)
+            await saveMemory({
+                text,
+                images: uploadedImages, // ✅ HTTPS URLs
+                audioURL: uploadedAudioURL,
+                mood,
+            });
+
+            // 🧹 Clear form
+            setText("");
+            setImages([]);
+            setAudioURL(null);
+            setMood(null);
+
+            alert("Memory saved 💙");
+        } catch (error) {
+            console.error("Failed to save memory", error);
+            alert("Something went wrong");
+        } finally {
+            setLoading(false);
+        }
     };
+
 
     return (
         <View className="flex-1 bg-gray-50 px-4 pt-6">
@@ -85,12 +130,25 @@ const Save = () => {
                     className="text-base text-gray-800"
                 />
             </View>
-            {image && (
-                <Image
-                    source={{ uri: image }}
-                    className="w-full h-40 rounded-xl mb-4"
-                />
+            {images.length > 0 && (
+                <View className="flex-row flex-wrap gap-2 mb-4">
+                    {images.map((uri, index) => (
+                        <Pressable
+                            key={index}
+                            onPress={() =>
+                                // 🗑 Remove selected image by filtering it out using its index
+                                setImages(images.filter((_, i) => i !== index))
+                            }
+                        >
+                            <Image
+                                source={{ uri }}
+                                className="w-24 h-24 rounded-lg"
+                            />
+                        </Pressable>
+                    ))}
+                </View>
             )}
+
             {/* Action Buttons */}
             <View className="flex-row justify-around mb-6">
                 <Pressable onPress={pickImage} className="items-center">

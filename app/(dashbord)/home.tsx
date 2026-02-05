@@ -1,31 +1,43 @@
-import { View, Text ,
-  ScrollView,
-  Image,
-  Dimensions,
-  Pressable,
-  Animated,
-  StatusBar,
-  TouchableOpacity,
-  RefreshControl,
-  FlatList, } from 'react-native'
-import React ,{ useState ,useEffect ,useRef}from 'react'
-import { authenticateBiometric } from '../../service/biometricService';
-
-useEffect(() => {
-  const lock = async () => {
-    const success = await authenticateBiometric();
-    if (!success) {
-      alert("Authentication failed");
-    }
-  };
-
-  lock();
-}, []);// app/(dashboard)/home.tsx
-// COMPLETE DASHBOARD WITH DUMMY DATA AND CLEAR COMMENTS
+import { getAllMemories } from '@/service/memoryService';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useState } from 'react';
+import {
+    Image,
+    Pressable,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import { authenticateBiometric } from '../../service/biometricService';
 
 const DashboardScreen = () => {
     const [userName] = useState('Shasidu');
+    const [recentMemories, setRecentMemories] = useState<any[]>([]);
+
+    useEffect(() => {
+        const lock = async () => {
+            const success = await authenticateBiometric();
+            if (!success) {
+                alert("Authentication failed");
+            }
+        };
+
+        lock();
+    }, []);
+
+    useEffect(() => {
+        const loadMemories = async () => {
+            try {
+                const memories = await getAllMemories();
+                setRecentMemories(memories.slice(0, 3));
+            } catch (error) {
+                console.error("Failed to load memories:", error);
+            }
+        };
+
+        loadMemories();
+    }, []);
     
     // Mock data for demonstration
     const reflectionCards = [
@@ -69,40 +81,7 @@ const DashboardScreen = () => {
             color: 'bg-pink-50'
         }
     ];
-
-    const recentMemories = [
-        {
-            id: 1,
-            title: 'A peaceful morning walk',
-            preview: 'The sunrise was breathtaking today. I felt grateful for...',
-            date: 'Today, 8:30 AM',
-            hasImage: true,
-            image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400'
-        },
-        {
-            id: 2,
-            title: 'Coffee with an old friend',
-            preview: 'We talked for hours about everything and nothing...',
-            date: 'Yesterday, 3:15 PM',
-            hasImage: false
-        },
-        {
-            id: 3,
-            title: 'Finished reading a beautiful book',
-            preview: 'The ending made me cry. Sometimes stories touch our...',
-            date: '2 days ago',
-            hasImage: true,
-            image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400'
-        },
-        {
-            id: 4,
-            title: 'Mom called today',
-            preview: 'Her voice always makes me feel at home, no matter...',
-            date: '3 days ago',
-            hasImage: false
-        }
-    ];
-
+       
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour < 12) return { text: 'Good Morning', emoji: '☀️' };
@@ -205,7 +184,7 @@ const DashboardScreen = () => {
                             Recent Memories
                         </Text>
                         <TouchableOpacity>
-                            <Text className="text-purple-600 text-sm font-medium">
+                            <Text onPress={() => {console.log("select All Pressed")}} className="text-purple-600 text-sm font-medium">
                                 See all
                             </Text>
                         </TouchableOpacity>
@@ -227,7 +206,7 @@ const DashboardScreen = () => {
                                 {/* Content */}
                                 <View className="flex-1 pr-3">
                                     <Text className="text-base font-semibold text-gray-800 mb-2">
-                                        {memory.title}
+                                        {memory.text}
                                     </Text>
                                     <Text 
                                         className="text-sm text-gray-600 leading-5 mb-3"

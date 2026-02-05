@@ -1,72 +1,30 @@
-import {
-  collection,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
-import { db } from "../service/firebase";
-import { Memory, MemoryStats } from "../types/memory";
+import { addDoc, collection, getDocs, query, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebase";
 
-/**
- * Get total memory count
- */
-export const getTotalMemoryCount = async (): Promise<number> => {
-  const snapshot = await getDocs(collection(db, "memories"));
-  return snapshot.size;
-};
-
-/**
- * Get recent memories (latest 5)
- */
-export const getRecentMemories = async (): Promise<Memory[]> => {
-  const q = query(
-    collection(db, "memories"),
-    orderBy("createdAt", "desc"),
-    limit(5)
-  );
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Memory[];
-};
-
-/**
- * Get memories that contain images
- */
-export const getMemoriesWithImages = async (): Promise<Memory[]> => {
-  const q = query(
-    collection(db, "memories"),
-    where("imageUrl", "!=", null)
-  );
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Memory[];
-};
-
-/**
- * Get memory statistics
- */
-export const getMemoryStats = async (): Promise<MemoryStats> => {
-  const snapshot = await getDocs(collection(db, "memories"));
-
-  let withImages = 0;
-
-  snapshot.forEach((doc) => {
-    if (doc.data().imageUrl) withImages++;
+export const saveMemory = async (memory: {
+  text: string;
+  images: string[];
+  audioURL: string | null;
+  mood: string | null;
+}) => {
+  return await addDoc(collection(db, "memories"), {
+    ...memory,
+    createdAt: serverTimestamp(),
   });
-
-  return {
-    total: snapshot.size,
-    withImages,
-    withoutImages: snapshot.size - withImages,
-  };
 };
+
+
+export const getAllMemories = async () => {
+  try {
+    const querySnapshot = query(collection(db, "memories"));
+
+    const snapshot = await getDocs(querySnapshot);
+
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+  }catch (error) {
+    console.error("Error getting memories: ", error);
+    throw error;
+  }
+
+  }
