@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { authenticateBiometric } from '../../service/biometricService';
 
+
+
 const DashboardScreen = () => {
     const [userName] = useState('Shasidu');
     const [recentMemories, setRecentMemories] = useState<any[]>([]);
@@ -30,7 +32,8 @@ const DashboardScreen = () => {
         const loadMemories = async () => {
             try {
                 const memories = await getAllMemories();
-                setRecentMemories(memories.slice(0, 3));
+
+                setRecentMemories(memories.slice(0, 7));
             } catch (error) {
                 console.error("Failed to load memories:", error);
             }
@@ -38,7 +41,7 @@ const DashboardScreen = () => {
 
         loadMemories();
     }, []);
-    
+
     // Mock data for demonstration
     const reflectionCards = [
         {
@@ -81,7 +84,7 @@ const DashboardScreen = () => {
             color: 'bg-pink-50'
         }
     ];
-       
+
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour < 12) return { text: 'Good Morning', emoji: '☀️' };
@@ -93,7 +96,7 @@ const DashboardScreen = () => {
 
     return (
         <View className="flex-1 bg-gray-50">
-            <ScrollView 
+            <ScrollView
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
             >
@@ -112,14 +115,14 @@ const DashboardScreen = () => {
 
                 {/* Reflection Slider */}
                 <View className="mt-6 mb-4">
-                    <ScrollView 
-                        horizontal 
+                    <ScrollView
+                        horizontal
                         showsHorizontalScrollIndicator={false}
                         className="px-6"
                         contentContainerStyle={{ paddingRight: 24 }}
                     >
                         {reflectionCards.map((card, index) => (
-                            <Pressable 
+                            <Pressable
                                 key={card.id}
                                 className="mr-4 active:opacity-80"
                                 style={{ width: 280 }}
@@ -184,7 +187,7 @@ const DashboardScreen = () => {
                             Recent Memories
                         </Text>
                         <TouchableOpacity>
-                            <Text onPress={() => {console.log("select All Pressed")}} className="text-purple-600 text-sm font-medium">
+                            <Text onPress={() => { console.log("select All Pressed") }} className="text-purple-600 text-sm font-medium">
                                 See all
                             </Text>
                         </TouchableOpacity>
@@ -208,26 +211,26 @@ const DashboardScreen = () => {
                                     <Text className="text-base font-semibold text-gray-800 mb-2">
                                         {memory.text}
                                     </Text>
-                                    <Text 
+                                    <Text
                                         className="text-sm text-gray-600 leading-5 mb-3"
                                         numberOfLines={2}
                                     >
-                                        {memory.preview}
+                                        {memory.text}
                                     </Text>
                                     <Text className="text-xs text-gray-400">
-                                        {memory.date}
+                                        {memory?.createdAt.toDate().toLocaleDateString() ?? ""}
                                     </Text>
                                 </View>
 
                                 {/* Image Thumbnail */}
-                                {memory.hasImage && (
-                                    <View 
+                                {memory.images && memory.images.length > 0 &&(
+                                    <View
                                         className="bg-gray-200 rounded-2xl overflow-hidden"
                                         style={{ width: 80, height: 80 }}
                                     >
                                         <Image
-                                            source={{ uri: memory.image }}
-                                            style={{ width: '100%', height: '100%' }}
+                                            source={{ uri: memory.images[0] }}
+                                            style={{ width: "100%", height: "100%" }}
                                             resizeMode="cover"
                                         />
                                     </View>
