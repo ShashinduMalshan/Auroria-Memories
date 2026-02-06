@@ -3,6 +3,7 @@ import { app } from "./firebase";
 
 const storage = getStorage(app);
 
+
 // Upload image OR audio and return URL
 export const uploadFile = async (
   uri: string,

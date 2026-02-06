@@ -18,6 +18,7 @@ const moods = [
 
 
 const Save = () => {
+    const [title, setTitle] = useState("");
     const [text, setText] = useState("");
     const [mood, setMood] = useState<string | null>(null);
     const [images, setImages] = useState<string[]>([]);
@@ -67,8 +68,13 @@ const Save = () => {
     }
 
     const handleSave = async () => {
+        if (!title) {
+            alert("Add title to save a memory");
+            return;
+        }
+        
         if (!text) {
-            alert("Add text, image, or voice to save a memory");
+            alert("Add text to save a memory");
             return;
         }
             setLoading(true);
@@ -90,6 +96,7 @@ const Save = () => {
 
             // 💾 Save to Firestore (ONLY URLs)
             await saveMemory({
+                title,
                 text,
                 images: uploadedImages, // ✅ HTTPS URLs
                 audioURL: uploadedAudioURL,
@@ -97,6 +104,7 @@ const Save = () => {
             });
 
             // 🧹 Clear form
+            setTitle("");
             setText("");
             setImages([]);
             setAudioURL(null);
@@ -122,6 +130,15 @@ const Save = () => {
 
             {/* Text Memory */}
             <View className="bg-white rounded-xl p-4 mb-4 shadow-sm">
+                <TextInput
+                    placeholder="A moment worth naming…"
+                    multiline
+                    value={title}
+                    onChangeText={setTitle}
+                    className="text-base text-gray-800"
+                />
+            </View>
+            <View className="bg-white rounded-xl p-20 mb-4 shadow-sm">
                 <TextInput
                     placeholder="Write your thoughts here..."
                     multiline

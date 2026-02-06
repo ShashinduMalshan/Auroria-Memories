@@ -1,6 +1,8 @@
 // types/memory.ts
 
 export interface Memory {
+  images: any;
+  text: string;
   id: string;
   userId: string;
   title: string;

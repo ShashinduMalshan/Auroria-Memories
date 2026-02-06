@@ -1,7 +1,8 @@
-import { addDoc, collection, getDocs, query, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, serverTimestamp ,orderBy} from "firebase/firestore";
 import { db } from "./firebase";
 
 export const saveMemory = async (memory: {
+  title: string;
   text: string;
   images: string[];
   audioURL: string | null;
@@ -16,7 +17,9 @@ export const saveMemory = async (memory: {
 
 export const getAllMemories = async () => {
   try {
-    const querySnapshot = query(collection(db, "memories"));
+    const querySnapshot = query(collection(db, "memories"), orderBy("createdAt", "desc") // latest first
+);
+    
 
     const snapshot = await getDocs(querySnapshot);
 

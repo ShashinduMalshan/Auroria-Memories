@@ -10,6 +10,7 @@ import {
     View
 } from 'react-native';
 import { authenticateBiometric } from '../../service/biometricService';
+import { router } from 'expo-router';
 
 
 
@@ -187,7 +188,7 @@ const DashboardScreen = () => {
                             Recent Memories
                         </Text>
                         <TouchableOpacity>
-                            <Text onPress={() => { console.log("select All Pressed") }} className="text-purple-600 text-sm font-medium">
+                            <Text onPress={() => { router.push('/allMemories/allMemories') }} className="text-purple-600 text-sm font-medium">
                                 See all
                             </Text>
                         </TouchableOpacity>
@@ -195,6 +196,12 @@ const DashboardScreen = () => {
 
                     {recentMemories.map((memory) => (
                         <Pressable
+                            onPress={() =>
+                                router.push({
+                                    pathname: "/diary/book",
+                                    params: { startId: memory.id },
+                                })
+                            }
                             key={memory.id}
                             className="bg-white rounded-3xl p-5 mb-4 active:opacity-90"
                             style={{
@@ -209,7 +216,8 @@ const DashboardScreen = () => {
                                 {/* Content */}
                                 <View className="flex-1 pr-3">
                                     <Text className="text-base font-semibold text-gray-800 mb-2">
-                                        {memory.text}
+                                        {memory.title
+                                        }
                                     </Text>
                                     <Text
                                         className="text-sm text-gray-600 leading-5 mb-3"
@@ -223,7 +231,7 @@ const DashboardScreen = () => {
                                 </View>
 
                                 {/* Image Thumbnail */}
-                                {memory.images && memory.images.length > 0 &&(
+                                {memory.images && memory.images.length > 0 && (
                                     <View
                                         className="bg-gray-200 rounded-2xl overflow-hidden"
                                         style={{ width: 80, height: 80 }}
