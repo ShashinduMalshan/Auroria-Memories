@@ -12,15 +12,45 @@ import { DiaryFont, Memory } from "../../types/memory";
 import { ScrollView } from "react-native";
 import { useFonts } from "expo-font";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    runOnJS,
+} from "react-native-reanimated";
+
 
 const { width, height } = Dimensions.get("window");
 
 export default function DiaryBook() {
 
+    const MIN_FONT = 14;
+    const MAX_FONT = 28;
+
     const { startId } = useLocalSearchParams();
     const [memories, setMemories] = useState<Memory[]>([]);
     const [diaryFont, setDiaryFont] = useState<DiaryFont>("default");
     const flatListRef = useRef<FlatList>(null);
+    const [fontSize, setFontSize] = useState(20);
+
+    const scale = useSharedValue(1);
+
+    const pinchGesture = Gesture.Pinch()
+        .onUpdate((e) => {
+            scale.value = e.scale;
+        })
+        .onEnd(() => {
+            // Convert pinch scale to font size change
+            const nextSize = Math.min(
+                MAX_FONT,
+                Math.max(MIN_FONT, fontSize * scale.value)
+            );
+
+            scale.value = 1;
+
+            // Update React state safely
+            runOnJS(setFontSize)(Math.round(nextSize));
+        });
 
 
     const [fontsLoaded] = useFonts({
@@ -153,15 +183,22 @@ export default function DiaryBook() {
 
 
                         {/* Text */}
-                        <Text style={{
-                            fontFamily: diaryFont === "default" ? undefined : diaryFont,
-                            fontSize: 20,
-                            color: "#1F2937",
-                            marginBottom: 20,
-                        }}
-                        >
-                            {item.text}
-                        </Text>
+                        <GestureDetector gesture={pinchGesture}>
+                            <Animated.Text
+                                style={[
+                                    {
+                                        fontFamily: diaryFont === "default" ? undefined : diaryFont,
+                                        color: "#1F2937",
+                                        lineHeight: fontSize * 1.4,
+                                    },
+                                    {
+                                        fontSize: fontSize,
+                                    },
+                                ]}
+                            >
+                                {item.text}
+                            </Animated.Text>
+                        </GestureDetector>
                     </ScrollView>
                 </View>
             )}

@@ -5,8 +5,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { LoaderProvider } from "../context/LoaderContext"
 import { AuthProvider } from "../context/authContext"
 import { LockProvider } from "@/context/LockContext"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 
 const RootLayout = () => {
+
   const insets = useSafeAreaInsets()
   console.log(insets);
 
@@ -18,9 +20,11 @@ const RootLayout = () => {
     <LoaderProvider>
       <AuthProvider>
         <LockProvider>
-        <View style={{ marginTop: insets.top, flex: 1 }}>
-          <Slot />
-        </View>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <View style={{ marginTop: insets.top, flex: 1 }}>
+              <Slot />
+            </View>
+          </GestureHandlerRootView>
         </LockProvider>
       </AuthProvider>
     </LoaderProvider>
