@@ -35,6 +35,9 @@ const Save = () => {
     const [isPaused, setIsPaused] = useState(false);
     const [audioURL, setAudioURL] = useState<string | null>(null);
     const recordingRef = useRef<Audio.Recording | null>(null);
+    const [seconds, setSeconds] = useState(0);
+    const timerRef = useRef<number | null>(null);
+
 
     const wave = useSharedValue(1);
 
@@ -71,6 +74,14 @@ const Save = () => {
     }
 
     const recordAudio = async () => {
+
+        setSeconds(0);
+
+        timerRef.current = setInterval(() => {
+            setSeconds((prev) => prev + 1);
+        }, 1000);
+
+
         try {
             await Audio.requestPermissionsAsync();
 
@@ -94,6 +105,11 @@ const Save = () => {
 
 
     const pauseRecording = async () => {
+
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+
         if (!recordingRef.current) return;
 
         await recordingRef.current.pauseAsync();
@@ -102,8 +118,12 @@ const Save = () => {
 
 
     const stopRecording = async () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
+        setSeconds(0);
         if (!recordingRef.current) return;
-
         try {
             await recordingRef.current.stopAndUnloadAsync();
             const uri = recordingRef.current.getURI();
@@ -120,6 +140,18 @@ const Save = () => {
         }
     };
 
+    const resumeRecording = async () => {
+        timerRef.current = setInterval(() => {
+            setSeconds((prev) => prev + 1);
+        }, 1000);
+
+
+        if (!recordingRef.current) return;
+
+        await recordingRef.current.startAsync();
+        setIsPaused(false);
+    };
+
 
     const onMainPress = () => {
         if (!isRecording) {
@@ -131,16 +163,13 @@ const Save = () => {
         }
     };
 
-
-
-    const resumeRecording = async () => {
-        if (!recordingRef.current) return;
-
-        await recordingRef.current.startAsync();
-        setIsPaused(false);
+    const formatTime = (secs: number) => {
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        return `${m.toString().padStart(2, "0")}:${s
+            .toString()
+            .padStart(2, "0")}`;
     };
-
-
 
 
     const handleSave = async () => {
@@ -149,7 +178,7 @@ const Save = () => {
         if (isRecording) {
             await stopRecording();
         }
-        
+
         if (!title) {
             alert("Add title to save a memory");
             return;
@@ -255,120 +284,114 @@ const Save = () => {
                     <Text className="text-xs mt-1 text-gray-600">Image</Text>
                 </Pressable>
 
-                <Pressable className="items-center">
-                    <Pressable onPress={onMainPress}>
-                        <View
-                            className={`w-14 h-14 rounded-full items-center justify-center ${isRecording ? "bg-red-100" : "bg-purple-100"
-                                }`}
-                        >
-                            <MaterialIcons
-                                name={
-                                    !isRecording
-                                        ? "mic"
-                                        : isPaused
-                                            ? "play-arrow"
-                                            : "pause"
-                                }
-                                size={28}
-                                color={isRecording ? "#EF4444" : "#8B5CF6"}
-                            />
-                        </View>
-                    </Pressable>
+                <View className="items-center">
+                    {/* ===== ICON ROW ===== */}
+                    <View className="flex-row items-center gap-4">
+                        {/* Main button */}
+                        <Pressable onPress={onMainPress}>
+                            <View
+                                className={`w-14 h-14 rounded-full items-center justify-center ${isRecording ? "bg-red-100" : "bg-purple-100"
+                                    }`}
+                            >
+                                <MaterialIcons
+                                    name={
+                                        !isRecording
+                                            ? "mic"
+                                            : isPaused
+                                                ? "play-arrow"
+                                                : "pause"
+                                    }
+                                    size={28}
+                                    color={isRecording ? "#EF4444" : "#8B5CF6"}
 
+                                />
+                            </View>
+                        </Pressable>
+
+                        {/* Stop button */}
+                        {isRecording && (
+                            <Pressable onPress={stopRecording}>
+                                <View className="w-14 h-14 rounded-full items-center justify-center bg-gray-200">
+                                    <MaterialIcons name="stop" size={26} color="#EF4444" />
+                                </View>
+                            </Pressable>
+                        )}
+                    </View>
+
+                    {/* ===== LABEL (ALWAYS BELOW ICONS) ===== */}
                     <Text className="text-xs mt-2 text-gray-600">
                         {!isRecording
                             ? "Voice"
                             : isPaused
                                 ? "Paused"
                                 : "Recording…"}
+
                     </Text>
 
                     {isRecording && (
-                        <Pressable onPress={stopRecording} className="mt-3">
-                            <MaterialIcons name="stop" size={26} color="#EF4444" />
-                        </Pressable>
+                        <Text className="text-xs text-gray-500 mt-1">
+                            {formatTime(seconds)}
+                        </Text>
+
                     )}
 
-                    {/* Wave animation */}
-                    {isRecording && !isPaused && (
-                        <View className="flex-row mt-2 h-6 items-end">
-                            {[1, 2, 3, 4, 5].map((_, i) => (
-                                <Animated.View
-                                    key={i}
-                                    style={[
-                                        {
-                                            width: 4,
-                                            height: 16,
-                                            backgroundColor: "#8B5CF6",
-                                            marginHorizontal: 3,
-                                            borderRadius: 2,
-                                        },
-                                        waveStyle,
-                                    ]}
-                                />
-                            ))}
+                            {/* ===== WAVE ANIMATION (BOTTOM) =====  */}
+                            {isRecording && !isPaused && (
+                                <View className="flex-row mt-3 h-6 items-end">
+                                    {[1, 2, 3, 4, 5].map((_, i) => (
+                                        <Animated.View
+                                            key={i}
+                                            style={[
+                                                {
+                                                    width: 4,
+                                                    height: 16,
+                                                    backgroundColor: "#8B5CF6",
+                                                    marginHorizontal: 3,
+                                                    borderRadius: 2,
+                                                },
+                                                waveStyle,
+                                            ]}
+                                        />
+                                    ))}
+                                </View>
+                            )}
                         </View>
-                    )}
-                </Pressable>
-
-
-                {isRecording && !isPaused && (
-                    <View className="flex-row mt-2 h-6 items-end">
-                        {[1, 2, 3, 4, 5].map((_, i) => (
-                            <Animated.View
-                                key={i}
-                                style={[
-                                    {
-                                        width: 4,
-                                        height: 16,
-                                        backgroundColor: "#8B5CF6",
-                                        marginHorizontal: 3,
-                                        borderRadius: 2,
-                                    },
-                                    waveStyle,
-                                ]}
-                            />
-                        ))}
-                    </View>
-                )}
-
-
             </View>
 
-            {/* Mood Picker */}
-            <Text className="mb-2 text-gray-700 font-medium">
-                How do you feel?
-            </Text>
-
-            <View className="flex-row justify-between mb-8">
-                {moods.map((item) => (
-                    <Pressable
-                        key={item.label}
-                        onPress={() => setMood(item.label)}
-                        className={`flex-1 mx-1 py-3 rounded-xl items-center ${mood === item.label ? "bg-gray-200" : "bg-white"
-                            }`}
-                    >
-                        <MaterialIcons
-                            name={item.icon as any}
-                            size={26}
-                            color={item.color}
-                        />
-                        <Text className="text-xs mt-1">{item.label}</Text>
-                    </Pressable>
-                ))}
-            </View>
-
-            {/* Save Button */}
-            <Pressable
-                onPress={handleSave}
-                className="bg-blue-600 py-4 rounded-xl items-center"
-            >
-                <Text className="text-white font-semibold text-base">
-                    Save Memory
+                {/* Mood Picker */}
+                <Text className="mb-2 text-gray-700 font-medium">
+                    How do you feel?
                 </Text>
-            </Pressable>
-        </View>
-    );
+
+                <View className="flex-row justify-between mb-8">
+                    {moods.map((item) => (
+                        <Pressable
+                            key={item.label}
+                            onPress={() => setMood(item.label)}
+                            className={`flex-1 mx-1 py-3 rounded-xl items-center ${mood === item.label ? "bg-gray-200" : "bg-white"
+                                }`}
+                        >
+                            <MaterialIcons
+                                name={item.icon as any}
+                                size={26}
+                                color={item.color}
+                            />
+                            <Text className="text-xs mt-1">{item.label}</Text>
+                        </Pressable>
+                    ))}
+                </View>
+
+                {/* Save Button */}
+                <Pressable
+                    onPress={handleSave}
+                    className="bg-blue-600 py-4 rounded-xl items-center"
+                >
+                    <Text className="text-white font-semibold text-base">
+                        Save Memory
+                    </Text>
+                </Pressable>
+            </View>
+            );
 }
 
-export default Save;
+            export default Save;
