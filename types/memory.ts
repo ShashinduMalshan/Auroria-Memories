@@ -12,6 +12,8 @@ export interface Memory {
   updatedAt: Date;
   tags?: string[];
   location?: string;
+  audioURL?: string | null;
+
 }
 
 export interface MemoryStats {

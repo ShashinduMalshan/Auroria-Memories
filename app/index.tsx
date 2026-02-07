@@ -2,7 +2,6 @@ import { ActivityIndicator, View } from "react-native";
 import ".././global.css"
 import {useAuth}  from "../hooks/useAuth"
 
-
 import { Redirect } from "expo-router"
 
 const Index = () => {

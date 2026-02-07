@@ -7,8 +7,8 @@ export default function LockScreen() {
   const router = useRouter();
 
   const onUnlock = async () => {
-    const ok = await unlockNow();
-    if (ok) router.replace("/home");
+    await unlockNow();
+    router.replace("/home");
   };
 
   return (

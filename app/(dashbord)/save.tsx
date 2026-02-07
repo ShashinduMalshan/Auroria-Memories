@@ -303,7 +303,7 @@ const Save = () => {
                     className="text-base text-gray-800"
                 />
             </View>
-            {/* image Preview */}
+            {/* ===== Image Preview ===== */}
             {images.length > 0 && (
                 <View className="flex-row flex-wrap gap-2 mb-4">
                     {images.map((uri, index) => (
@@ -444,7 +444,8 @@ const Save = () => {
                 {moods.map((item) => (
                     <Pressable
                         key={item.label}
-                        onPress={() => setMood(item.label)}
+                        onPress={() => setMood((prev) => (prev === item.label ? null : item.label))
+                        }
                         className={`flex-1 mx-1 py-3 rounded-xl items-center ${mood === item.label ? "bg-gray-200" : "bg-white"
                             }`}
                     >
