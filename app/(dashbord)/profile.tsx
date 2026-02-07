@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import ConfirmAlert from "@/components/ConfirmAlert";
-
+import { auth } from "@/service/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 
 const fonts = [
@@ -23,6 +24,23 @@ const fonts = [
 
 export default function Profile() {
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
+  const [userName, setUserName] = useState<string>("User");
+
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // priority: displayName → email → fallback
+        setUserName(
+          user.displayName ??
+          user.email?.split("@")[0] ??
+          "User"
+        );
+      }
+    });
+
+    return unsub;
+  }, []);
 
 
 
@@ -42,7 +60,7 @@ export default function Profile() {
 
         {/* Name */}
         <Text className="text-xl font-semibold text-gray-800">
-          Shasidu Malshan
+          {userName}
         </Text>
 
         <Text className="text-sm text-gray-500">
