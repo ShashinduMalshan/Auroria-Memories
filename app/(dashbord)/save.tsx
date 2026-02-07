@@ -37,6 +37,9 @@ const Save = () => {
     const recordingRef = useRef<Audio.Recording | null>(null);
     const [seconds, setSeconds] = useState(0);
     const timerRef = useRef<number | null>(null);
+    const [sound, setSound] = useState<Audio.Sound | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+
 
 
     const wave = useSharedValue(1);
@@ -171,6 +174,48 @@ const Save = () => {
             .padStart(2, "0")}`;
     };
 
+    const playAudio = async () => {
+        if (!audioURL) return;
+
+        try {
+            const { sound } = await Audio.Sound.createAsync(
+                { uri: audioURL },
+                { shouldPlay: true }
+            );
+            setSound(sound);
+            setIsPlaying(true);
+
+            sound.setOnPlaybackStatusUpdate((status) => {
+                if (!status.isLoaded) return;
+                if (status.didJustFinish) {
+                    setIsPlaying(false);
+                    sound.unloadAsync();
+                    setSound(null);
+                }
+            });
+        } catch (err) {
+            console.error("Play audio error", err);
+        }
+    };
+
+    const stopAudio = async () => {
+        if (!sound) return;
+
+        await sound.stopAsync();
+        await sound.unloadAsync();
+        setSound(null);
+        setIsPlaying(false);
+    };
+
+    const removeAudio = async () => {
+        if (sound) {
+            await sound.unloadAsync();
+        }
+        setSound(null);
+        setAudioURL(null);
+        setIsPlaying(false);
+    };
+
 
     const handleSave = async () => {
 
@@ -258,6 +303,7 @@ const Save = () => {
                     className="text-base text-gray-800"
                 />
             </View>
+            {/* image Preview */}
             {images.length > 0 && (
                 <View className="flex-row flex-wrap gap-2 mb-4">
                     {images.map((uri, index) => (
@@ -276,6 +322,37 @@ const Save = () => {
                     ))}
                 </View>
             )}
+
+
+            {/* ===== Audio Preview ===== */}
+            {audioURL && (
+                <View className="bg-white rounded-xl p-4 mb-4 shadow-sm flex-row items-center justify-between">
+                    {/* Left: Play / Pause */}
+                    <Pressable onPress={isPlaying ? stopAudio : playAudio}>
+                        <MaterialIcons
+                            name={isPlaying ? "pause" : "play-arrow"}
+                            size={28}
+                            color="#8B5CF6"
+                        />
+                    </Pressable>
+
+                    {/* Center: Label */}
+                    <Text className="text-sm text-gray-700 flex-1 ml-4">
+                        Voice note
+                    </Text>
+
+                    {/* Right: Remove */}
+                    <Pressable onPress={removeAudio}>
+                        <MaterialIcons
+                            name="delete"
+                            size={22}
+                            color="#EF4444"
+                        />
+                    </Pressable>
+                </View>
+            )}
+
+
 
             {/* Action Buttons */}
             <View className="flex-row justify-around mb-6">
@@ -335,63 +412,63 @@ const Save = () => {
 
                     )}
 
-                            {/* ===== WAVE ANIMATION (BOTTOM) =====  */}
-                            {isRecording && !isPaused && (
-                                <View className="flex-row mt-3 h-6 items-end">
-                                    {[1, 2, 3, 4, 5].map((_, i) => (
-                                        <Animated.View
-                                            key={i}
-                                            style={[
-                                                {
-                                                    width: 4,
-                                                    height: 16,
-                                                    backgroundColor: "#8B5CF6",
-                                                    marginHorizontal: 3,
-                                                    borderRadius: 2,
-                                                },
-                                                waveStyle,
-                                            ]}
-                                        />
-                                    ))}
-                                </View>
-                            )}
+                    {/* ===== WAVE ANIMATION (BOTTOM) =====  */}
+                    {isRecording && !isPaused && (
+                        <View className="flex-row mt-3 h-6 items-end">
+                            {[1, 2, 3, 4, 5].map((_, i) => (
+                                <Animated.View
+                                    key={i}
+                                    style={[
+                                        {
+                                            width: 4,
+                                            height: 16,
+                                            backgroundColor: "#8B5CF6",
+                                            marginHorizontal: 3,
+                                            borderRadius: 2,
+                                        },
+                                        waveStyle,
+                                    ]}
+                                />
+                            ))}
                         </View>
-            </View>
-
-                {/* Mood Picker */}
-                <Text className="mb-2 text-gray-700 font-medium">
-                    How do you feel?
-                </Text>
-
-                <View className="flex-row justify-between mb-8">
-                    {moods.map((item) => (
-                        <Pressable
-                            key={item.label}
-                            onPress={() => setMood(item.label)}
-                            className={`flex-1 mx-1 py-3 rounded-xl items-center ${mood === item.label ? "bg-gray-200" : "bg-white"
-                                }`}
-                        >
-                            <MaterialIcons
-                                name={item.icon as any}
-                                size={26}
-                                color={item.color}
-                            />
-                            <Text className="text-xs mt-1">{item.label}</Text>
-                        </Pressable>
-                    ))}
+                    )}
                 </View>
-
-                {/* Save Button */}
-                <Pressable
-                    onPress={handleSave}
-                    className="bg-blue-600 py-4 rounded-xl items-center"
-                >
-                    <Text className="text-white font-semibold text-base">
-                        Save Memory
-                    </Text>
-                </Pressable>
             </View>
-            );
+
+            {/* Mood Picker */}
+            <Text className="mb-2 text-gray-700 font-medium">
+                How do you feel?
+            </Text>
+
+            <View className="flex-row justify-between mb-8">
+                {moods.map((item) => (
+                    <Pressable
+                        key={item.label}
+                        onPress={() => setMood(item.label)}
+                        className={`flex-1 mx-1 py-3 rounded-xl items-center ${mood === item.label ? "bg-gray-200" : "bg-white"
+                            }`}
+                    >
+                        <MaterialIcons
+                            name={item.icon as any}
+                            size={26}
+                            color={item.color}
+                        />
+                        <Text className="text-xs mt-1">{item.label}</Text>
+                    </Pressable>
+                ))}
+            </View>
+
+            {/* Save Button */}
+            <Pressable
+                onPress={handleSave}
+                className="bg-blue-600 py-4 rounded-xl items-center"
+            >
+                <Text className="text-white font-semibold text-base">
+                    Save Memory
+                </Text>
+            </Pressable>
+        </View>
+    );
 }
 
-            export default Save;
+export default Save;
