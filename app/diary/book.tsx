@@ -1,4 +1,4 @@
-import { getAllMemories } from "@/service/memoryService";
+import { getUserMemories } from "@/service/memoryService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from "expo-av";
 import { useFonts } from "expo-font";
@@ -77,7 +77,7 @@ export default function DiaryBook() {
         });
 
         const load = async () => {
-            const data = await getAllMemories();
+            const data = await getUserMemories();
             setMemories(
                 data.map((item: any) => ({
                     id: item.id,

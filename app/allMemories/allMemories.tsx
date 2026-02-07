@@ -7,7 +7,7 @@ import {
   View,
   TextInput
 } from 'react-native'; import React, { useEffect, useState } from 'react'
-import { getAllMemories } from '@/service/memoryService';
+import { getUserMemories } from '@/service/memoryService';
 import { router } from 'expo-router';
 
 const AllMemories = () => {
@@ -18,7 +18,7 @@ const AllMemories = () => {
   useEffect(() => {
     const loadMemories = async () => {
       try {
-        const memories = await getAllMemories();
+        const memories = await getUserMemories();
         setAllMemories(memories);
         setRecentMemories(memories);
       } catch (error) {

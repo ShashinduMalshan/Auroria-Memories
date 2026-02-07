@@ -1,4 +1,4 @@
-import { getAllMemories } from '@/service/memoryService';
+import { getUserMemories } from '@/service/memoryService';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import {
@@ -32,7 +32,7 @@ const DashboardScreen = () => {
     useEffect(() => {
         const loadMemories = async () => {
             try {
-                const memories = await getAllMemories();
+                const memories = await getUserMemories();
 
                 setRecentMemories(memories.slice(0, 7));
             } catch (error) {
