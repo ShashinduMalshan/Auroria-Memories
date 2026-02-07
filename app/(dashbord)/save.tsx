@@ -1,10 +1,16 @@
 import { View, Text, TextInput, Pressable, Image } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
 import { saveMemory } from "@/service/memoryService";
 import { uploadFile } from "@/service/storageService";
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withRepeat,
+    withTiming,
+} from "react-native-reanimated";
 
 
 
@@ -25,7 +31,31 @@ const Save = () => {
     const [loading, setLoading] = useState<boolean>(false);
 
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
+    const [isRecording, setIsRecording] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
     const [audioURL, setAudioURL] = useState<string | null>(null);
+    const recordingRef = useRef<Audio.Recording | null>(null);
+
+    const wave = useSharedValue(1);
+
+    useEffect(() => {
+        if (isRecording && !isPaused) {
+            wave.value = withRepeat(
+                withTiming(1.4, { duration: 300 }),
+                -1,
+                true
+            );
+        } else {
+            wave.value = withTiming(1);
+        }
+    }, [isRecording, isPaused]);
+
+    const waveStyle = useAnimatedStyle(() => ({
+        transform: [{ scaleY: wave.value }],
+    }));
+
+
+
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -41,43 +71,95 @@ const Save = () => {
     }
 
     const recordAudio = async () => {
-
-        
         try {
             await Audio.requestPermissionsAsync();
+
             await Audio.setAudioModeAsync({
                 allowsRecordingIOS: true,
                 playsInSilentModeIOS: true,
             });
+
             const { recording } = await Audio.Recording.createAsync(
                 Audio.RecordingOptionsPresets.HIGH_QUALITY
             );
-            setRecording(recording);
+
+            recordingRef.current = recording;
+            setIsRecording(true);
+            setIsPaused(false);
+        } catch (err) {
+            console.error("Failed to start recording", err);
         }
-        catch (err) {
-            console.error('Failed to start recording', err);
-        }
-    }
+    };
+
+
+
+    const pauseRecording = async () => {
+        if (!recordingRef.current) return;
+
+        await recordingRef.current.pauseAsync();
+        setIsPaused(true);
+    };
+
 
     const stopRecording = async () => {
-        if (!recording) return;
-        await recording.stopAndUnloadAsync();
-        const uri = recording.getURI();
-        setAudioURL(uri);
-        setRecording(null);
-    }
+        if (!recordingRef.current) return;
+
+        try {
+            await recordingRef.current.stopAndUnloadAsync();
+            const uri = recordingRef.current.getURI();
+            console.log("Saved audio:", uri);
+
+            if (uri) setAudioURL(uri);
+
+
+            recordingRef.current = null;
+            setIsRecording(false);
+            setIsPaused(false);
+        } catch (err) {
+            console.error("Stop error", err);
+        }
+    };
+
+
+    const onMainPress = () => {
+        if (!isRecording) {
+            recordAudio();
+        } else if (isPaused) {
+            resumeRecording();
+        } else {
+            pauseRecording();
+        }
+    };
+
+
+
+    const resumeRecording = async () => {
+        if (!recordingRef.current) return;
+
+        await recordingRef.current.startAsync();
+        setIsPaused(false);
+    };
+
+
+
 
     const handleSave = async () => {
+
+
+        if (isRecording) {
+            await stopRecording();
+        }
+        
         if (!title) {
             alert("Add title to save a memory");
             return;
         }
-        
+
         if (!text) {
             alert("Add text to save a memory");
             return;
         }
-            setLoading(true);
+        setLoading(true);
 
         try {
 
@@ -173,11 +255,84 @@ const Save = () => {
                     <Text className="text-xs mt-1 text-gray-600">Image</Text>
                 </Pressable>
 
-                <Pressable onPress={recording ? stopRecording : recordAudio}
-                    className="items-center">
-                    <MaterialIcons name="mic" size={28} color="#8B5CF6" />
-                    <Text className="text-xs mt-1 text-gray-600">Voice</Text>
+                <Pressable className="items-center">
+                    <Pressable onPress={onMainPress}>
+                        <View
+                            className={`w-14 h-14 rounded-full items-center justify-center ${isRecording ? "bg-red-100" : "bg-purple-100"
+                                }`}
+                        >
+                            <MaterialIcons
+                                name={
+                                    !isRecording
+                                        ? "mic"
+                                        : isPaused
+                                            ? "play-arrow"
+                                            : "pause"
+                                }
+                                size={28}
+                                color={isRecording ? "#EF4444" : "#8B5CF6"}
+                            />
+                        </View>
+                    </Pressable>
+
+                    <Text className="text-xs mt-2 text-gray-600">
+                        {!isRecording
+                            ? "Voice"
+                            : isPaused
+                                ? "Paused"
+                                : "Recording…"}
+                    </Text>
+
+                    {isRecording && (
+                        <Pressable onPress={stopRecording} className="mt-3">
+                            <MaterialIcons name="stop" size={26} color="#EF4444" />
+                        </Pressable>
+                    )}
+
+                    {/* Wave animation */}
+                    {isRecording && !isPaused && (
+                        <View className="flex-row mt-2 h-6 items-end">
+                            {[1, 2, 3, 4, 5].map((_, i) => (
+                                <Animated.View
+                                    key={i}
+                                    style={[
+                                        {
+                                            width: 4,
+                                            height: 16,
+                                            backgroundColor: "#8B5CF6",
+                                            marginHorizontal: 3,
+                                            borderRadius: 2,
+                                        },
+                                        waveStyle,
+                                    ]}
+                                />
+                            ))}
+                        </View>
+                    )}
                 </Pressable>
+
+
+                {isRecording && !isPaused && (
+                    <View className="flex-row mt-2 h-6 items-end">
+                        {[1, 2, 3, 4, 5].map((_, i) => (
+                            <Animated.View
+                                key={i}
+                                style={[
+                                    {
+                                        width: 4,
+                                        height: 16,
+                                        backgroundColor: "#8B5CF6",
+                                        marginHorizontal: 3,
+                                        borderRadius: 2,
+                                    },
+                                    waveStyle,
+                                ]}
+                            />
+                        ))}
+                    </View>
+                )}
+
+
             </View>
 
             {/* Mood Picker */}

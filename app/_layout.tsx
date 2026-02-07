@@ -18,16 +18,16 @@ const RootLayout = () => {
     // </SafeAreaView>
 
     <LoaderProvider>
-      <AuthProvider>
-        <LockProvider>
+      <LockProvider>
+        <AuthProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <View style={{ marginTop: insets.top, flex: 1 }}>
               <Slot />
             </View>
           </GestureHandlerRootView>
-        </LockProvider>
-      </AuthProvider>
-    </LoaderProvider>
+        </AuthProvider>
+      </LockProvider>
+    </LoaderProvider >
   )
 }
 
