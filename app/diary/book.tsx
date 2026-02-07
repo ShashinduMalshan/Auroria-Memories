@@ -8,17 +8,33 @@ import {
 import { Key, useEffect, useRef, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { getAllMemories } from "@/service/memoryService";
-import { Memory } from "../../types/memory";
+import { DiaryFont, Memory } from "../../types/memory";
 import { ScrollView } from "react-native";
+import { useFonts } from "expo-font";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
 
 export default function DiaryBook() {
+
     const { startId } = useLocalSearchParams();
     const [memories, setMemories] = useState<Memory[]>([]);
+    const [diaryFont, setDiaryFont] = useState<DiaryFont>("default");
     const flatListRef = useRef<FlatList>(null);
 
+
+    const [fontsLoaded] = useFonts({
+        Caveat: require("../../assets/fonts/Caveat-Regular.ttf"),
+        DancingScript: require("../../assets/fonts/DancingScript-VariableFont_wght.ttf"),
+        PatrickHand: require("../../assets/fonts/PatrickHand-Regular.ttf"),
+    });
+
     useEffect(() => {
+
+        AsyncStorage.getItem("diaryFont").then((saved) => {
+            if (saved) setDiaryFont(saved as DiaryFont);
+        });
+
         const load = async () => {
             const data = await getAllMemories();
             // Ensure data is of type Memory[]
@@ -137,7 +153,13 @@ export default function DiaryBook() {
 
 
                         {/* Text */}
-                        <Text className="text-base leading-7 text-gray-700">
+                        <Text style={{
+                            fontFamily: diaryFont === "default" ? undefined : diaryFont,
+                            fontSize: 20,
+                            color: "#1F2937",
+                            marginBottom: 20,
+                        }}
+                        >
                             {item.text}
                         </Text>
                     </ScrollView>

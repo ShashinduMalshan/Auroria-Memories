@@ -27,3 +27,5 @@ export interface UserProfile {
   photoURL?: string;
   createdAt: Date;
 }
+
+export type DiaryFont = "default" | "Caveat" | "DancingScript" | "PatrickHand";
