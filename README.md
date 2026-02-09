@@ -1,50 +1,206 @@
-# Welcome to your Expo app 👋
+# 🌿 Auroria – Personal Memory & Diary App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Auroria is a beautifully designed **personal diary and memory application** built with **Expo (React Native)** and **Firebase**.
+It allows users to preserve life moments using **text, images, and voice recordings**, presented in a calm, scrapbook-style experience.
 
-## Get started
+Auroria focuses on **privacy, emotion, and simplicity**, making it feel like a **digital memory book**, not just another notes app.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## ✨ Core Features
 
-2. Start the app
+### 📝 Text Memories
 
-   ```bash
-   npx expo start
-   ```
+* Write daily thoughts, reflections, or long-form diary entries
+* Handwritten-style fonts for a natural diary feel
+* Pinch-to-zoom text resizing in diary view
 
-In the output, you'll find options to open the app in a
+### 📸 Image Memories
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+* Upload images from gallery or camera
+* Scrapbook-style image layout with shadows and rotations
+* Images stored securely in Firebase Storage
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 🎙️ Voice Memories
 
-## Get a fresh project
+* Record personal voice notes
+* Play, pause, resume, and seek audio
+* Duration display and progress bar
+* Ideal for vlog-style memories without video
 
-When you're ready, run:
+### 📖 Diary Book Experience
 
-```bash
-npm run reset-project
+* Horizontal swipe like turning book pages
+* Smooth animations and gestures
+* Each memory feels like a page in a diary
+
+### 👤 Authentication & Security
+
+* Firebase Authentication (Email/Password)
+* User-specific data isolation (each user sees only their memories)
+* Automatic app lock after inactivity
+* Optional biometric unlock (fingerprint / face)
+
+---
+
+## 🧠 Why Auroria Is Different
+
+* ❌ No social feed
+* ❌ No likes, comments, or pressure
+* ✅ Fully private
+* ✅ Emotion-first design
+* ✅ Voice-based memory storytelling
+
+Auroria is built for **personal reflection**, not public sharing.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* **Expo + React Native**
+* **TypeScript**
+* **Expo Router**
+* **NativeWind (Tailwind for RN)**
+
+### Backend (Firebase)
+
+* **Firestore** – store memories
+* **Firebase Auth** – user authentication
+* **Firebase Storage** – images & audio files
+
+### Audio & Gestures
+
+* `expo-av` – audio recording & playback
+* `react-native-gesture-handler`
+* `react-native-reanimated`
+
+### Build & Deployment
+
+* **Expo EAS Build**
+* Android Preview & Production builds
+
+---
+
+## 📂 Project Structure
+
+```
+app/
+ ├─ (auth)/           # Login & Register screens
+ ├─ (dashboard)/      # Home, profile, settings
+ ├─ diary/            # Diary book view
+ ├─ save/             # Create new memory
+context/
+ ├─ AuthContext.tsx   # Auth & user state
+ ├─ LockContext.tsx   # Auto-lock logic
+service/
+ ├─ memoryService.ts  # Firestore memory logic
+ ├─ storageService.ts # Firebase Storage
+ ├─ audioService.ts   # Audio helpers
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## 📸 Screenshots
 
-To learn more about developing your project with Expo, look at the following resources:
+> 📌 *Replace the image paths below with real screenshots once you take them.*
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 🔐 Authentication
 
-## Join the community
+![Login Screen](screenshots/login.png)
+![Register Screen](screenshots/register.png)
 
-Join our community of developers creating universal apps.
+### 🏠 Dashboard
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+![Dashboard](screenshots/dashboard.png)
+
+### ✍️ Create Memory
+
+![Create Memory](screenshots/create-memory.png)
+![Voice Recording](screenshots/voice-record.png)
+
+### 📖 Diary Book View
+
+![Diary Book](screenshots/diary-book.png)
+![Voice Playback](screenshots/voice-playback.png)
+
+### ⚙️ Settings
+
+![Settings](screenshots/settings.png)
+
+---
+
+## 🔐 Environment Variables
+
+Auroria uses **EAS environment variables** (build-time):
+
+```
+EXPO_PUBLIC_FIREBASE_API_KEY
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN
+EXPO_PUBLIC_FIREBASE_PROJECT_ID
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+EXPO_PUBLIC_FIREBASE_APP_ID
+EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID
+```
+
+Configured using:
+
+```bash
+eas env:create
+```
+
+---
+
+## 📱 Permissions Used
+
+| Permission   | Purpose               |
+| ------------ | --------------------- |
+| Camera       | Capture images        |
+| Media Access | Select photos         |
+| Microphone   | Record voice memories |
+
+Permissions are requested **only when needed**.
+
+---
+
+## 🚀 Running the Project
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Start development
+
+```bash
+npx expo start
+```
+
+### Build Android (EAS)
+
+```bash
+eas build -p android --profile preview
+```
+
+---
+
+## 👤 Author
+
+**Shasidu Malshan**
+📧 Email: [shasidumalshan9579@gmail.com](mailto:shasidumalshan9579@gmail.com)
+🔗 GitHub: [https://github.com/ShashinduMalshan](https://github.com/ShashinduMalshan)
+
+---
+
+## 🌱 Future Enhancements
+
+* Cloud backup restore
+* Mood-based memory tagging
+* Voice transcription (AI)
+* Timeline & calendar view
+* iOS build support
+
+---

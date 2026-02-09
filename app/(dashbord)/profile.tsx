@@ -1,4 +1,4 @@
-import React, { useState ,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,13 +6,21 @@ import {
   Pressable,
   ScrollView,
   Alert,
+  TextInput,
+  Modal,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import ConfirmAlert from "@/components/ConfirmAlert";
-import { auth } from "@/service/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "@/service/firebase";
+import { onAuthStateChanged, updateProfile, getAuth } from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore";
+import { updateUserName } from "@/service/userService";
+import { useAuth } from "@/hooks/useAuth";
+
+
+
 
 
 const fonts = [
@@ -25,12 +33,19 @@ const fonts = [
 export default function Profile() {
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
   const [userName, setUserName] = useState<string>("User");
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [newName, setNewName] = useState("");
+  const { refreshUser , user } = useAuth();
+
+
+
 
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
         // priority: displayName → email → fallback
+        
         setUserName(
           user.displayName ??
           user.email?.split("@")[0] ??
@@ -42,6 +57,23 @@ export default function Profile() {
     return unsub;
   }, []);
 
+  const handleChangeName = async () => {
+    setNewName("");
+    setShowNameModal(true);
+  }
+
+
+  const confirmChangeName = async () => {
+    if (!newName.trim()) return;
+
+    try {
+      await updateUserName(newName);
+      await refreshUser();
+    } catch (e) {
+      console.error(e);
+    }
+    setShowNameModal(false);
+  };
 
 
   return (
@@ -60,7 +92,7 @@ export default function Profile() {
 
         {/* Name */}
         <Text className="text-xl font-semibold text-gray-800">
-          {userName}
+          {user?.displayName ?? "User"}
         </Text>
 
         <Text className="text-sm text-gray-500">
@@ -122,9 +154,9 @@ export default function Profile() {
               Account
             </Text>
 
-            <SettingItem icon="edit" label="Change Name" />
-            <SettingItem icon="image" label="Change Profile Picture" />
-            <SettingItem icon="lock" label="Change Password" />
+            <SettingItem icon="edit" label="Change Name" onPress={handleChangeName} />
+            <SettingItem icon="image" label="Change Profile Picture" onPress={() => console.log("Change Profile Picture pressed")} />
+            <SettingItem icon="lock" label="Change Password" onPress={() => console.log("Change Password pressed")} />
 
 
             {/* ===== Logout Button ===== */}
@@ -150,6 +182,41 @@ export default function Profile() {
           router.replace("/login");
         }}
       />
+      <Modal
+        transparent
+        animationType="fade"
+        visible={showNameModal}
+      >
+        <View className="flex-1 bg-black/40 items-center justify-center">
+          <View className="bg-white w-[85%] rounded-2xl p-5">
+
+            <Text className="text-lg font-semibold text-gray-800 mb-3">
+              Change Name
+            </Text>
+
+            <TextInput
+              value={newName}
+              onChangeText={setNewName}
+              placeholder="Enter new name"
+              className="border border-gray-300 rounded-xl px-4 py-3 text-base mb-4"
+            />
+
+            <View className="flex-row justify-end gap-3">
+              <Pressable onPress={() => setShowNameModal(false)}>
+                <Text className="text-gray-500 text-base">Cancel</Text>
+              </Pressable>
+
+              <Pressable onPress={confirmChangeName}>
+                <Text className="text-purple-600 font-semibold text-base">
+                  Confirm
+                </Text>
+              </Pressable>
+            </View>
+
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 
@@ -161,11 +228,13 @@ export default function Profile() {
 const SettingItem = ({
   icon,
   label,
+  onPress,
 }: {
   icon: any;
   label: string;
+  onPress?: () => void;
 }) => (
-  <Pressable className="flex-row items-center justify-between p-4 bg-gray-100 rounded-xl mb-3">
+  <Pressable onPress={() => onPress && onPress()} className="flex-row items-center justify-between p-4 bg-gray-100 rounded-xl mb-3">
     <View className="flex-row items-center">
       <MaterialIcons
         name={icon}
