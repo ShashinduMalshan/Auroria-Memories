@@ -13,9 +13,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import ConfirmAlert from "@/components/ConfirmAlert";
-import { auth, db } from "@/service/firebase";
-import { onAuthStateChanged, updateProfile, getAuth } from "firebase/auth";
-import { doc, updateDoc } from "firebase/firestore";
+import { auth } from "@/service/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { updateUserName } from "@/service/userService";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -44,7 +43,6 @@ export default function Profile() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // priority: displayName → email → fallback
         
         setUserName(
           user.displayName ??

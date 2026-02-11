@@ -16,7 +16,6 @@ import {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
     runOnJS,
-    useAnimatedStyle,
     useSharedValue,
 } from "react-native-reanimated";
 import { DiaryFont, Memory } from "../../types/memory";

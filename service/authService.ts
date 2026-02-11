@@ -29,6 +29,9 @@ export const registation  = async (
     await updateProfile(await userCredential.user, {
         displayName: fullName
     })
+
+    await userCredential.user.reload();
+
     setDoc(doc(db, "users", userCredential.user.uid), {
         name : fullName,
         role : "",  

@@ -3,7 +3,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
   TextInput
 } from 'react-native'; import React, { useEffect, useState } from 'react'

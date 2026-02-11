@@ -4,7 +4,8 @@ import {useAuth}  from "../hooks/useAuth"
 
 import { Redirect } from "expo-router"
 
-const Index = () => {
+
+export default function Index() {
     const { user, loading } = useAuth();
 
     if (loading) {
@@ -16,7 +17,7 @@ const Index = () => {
     }
 
     if (user) {
-        // return <Redirect href="/home" />
+        return <Redirect href="/home" />
     } else {
         return <Redirect href="/login" />
     }
