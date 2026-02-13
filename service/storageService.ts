@@ -1,4 +1,4 @@
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL ,listAll} from "firebase/storage";
 import { app } from "./firebase";
 
 const storage = getStorage(app);
@@ -19,4 +19,21 @@ export const uploadFile = async (
 
   const downloadURL = await getDownloadURL(storageRef);
   return downloadURL;
+};
+
+
+export const getAllStorageImages = async () => {
+  try {
+    const listRef = ref(storage, "memories"); 
+    const res = await listAll(listRef);
+
+    const urls = await Promise.all(
+      res.items.map((itemRef) => getDownloadURL(itemRef))
+    );
+
+    return urls;
+  } catch (error) {
+    console.error("Error fetching images:", error);
+    return [];
+  }
 };

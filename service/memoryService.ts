@@ -1,5 +1,5 @@
 import { addDoc, collection, getDocs, query, serverTimestamp, orderBy, where } from "firebase/firestore";
-import { db, auth } from "./firebase";
+import { db, auth, storage } from "./firebase";
 import { getAuth } from "firebase/auth";
 
 
@@ -19,7 +19,7 @@ export const saveMemory = async (memory: {
 
   return await addDoc(collection(db, "memories"), {
     ...memory,
-    userId: user.uid,            // 🔑 REQUIRED
+    userId: user.uid,            
     createdAt: serverTimestamp(),
   });
 };
@@ -49,5 +49,36 @@ export const getUserMemories = async () => {
   } catch (error) {
     console.error("Error getting user memories:", error);
     throw error;
+  }
+};
+
+
+export const getAllMemoryImages = async () => {
+  try {
+    const user = getAuth().currentUser;
+
+    if (!user) return [];
+
+    const q = query(
+      collection(db, "memories"),
+      where("userId", "==", user.uid)
+    );
+
+    const snapshot = await getDocs(q);
+
+    const allImages: string[] = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+
+      if (data.images && Array.isArray(data.images)) {
+        allImages.push(...data.images);
+      }
+    });
+
+    return allImages;
+  } catch (error) {
+    console.error("Error fetching images:", error);
+    return [];
   }
 };

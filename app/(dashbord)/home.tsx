@@ -1,258 +1,222 @@
-import { getUserMemories } from '@/service/memoryService';
+import { getUserMemories, getAllMemoryImages } from '@/service/memoryService';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import {
-    Image,
-    Pressable,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View
+  Dimensions,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
 } from 'react-native';
 import { authenticateBiometric } from '../../service/biometricService';
 import { router } from 'expo-router';
+import Carousel from 'react-native-reanimated-carousel';
 
-
+const { width } = Dimensions.get("window");
 
 const DashboardScreen = () => {
-    const [userName] = useState('Shasidu');
-    const [recentMemories, setRecentMemories] = useState<any[]>([]);
 
-    useEffect(() => {
-        const lock = async () => {
-            const success = await authenticateBiometric();
-            if (!success) {
-                alert("Authentication failed");
-            }
-        };
+  const [recentMemories, setRecentMemories] = useState<any[]>([]);
+  const [allImages, setAllImages] = useState<string[]>([]);
 
-        lock();
-    }, []);
+  // 🔐 Biometric
+  useEffect(() => {
+    authenticateBiometric();
+  }, []);
 
-    useEffect(() => {
-        const loadMemories = async () => {
-            try {
-                const memories = await getUserMemories();
-
-                setRecentMemories(memories.slice(0, 7));
-            } catch (error) {
-                console.error("Failed to load memories:", error);
-            }
-        };
-
-        loadMemories();
-    }, []);
-
-    // Mock data for demonstration
-    const reflectionCards = [
-        {
-            id: 1,
-            text: "Write one thing you're grateful for today",
-            emoji: "✨"
-        },
-        {
-            id: 2,
-            text: "You smiled on this day last year 😊",
-            emoji: "💛"
-        },
-        {
-            id: 3,
-            text: "Pause. Breathe. Remember.",
-            emoji: "🌸"
-        }
-    ];
-
-    const statistics = [
-        {
-            id: 1,
-            label: 'Total Memories',
-            value: '247',
-            icon: '📝',
-            color: 'bg-purple-50'
-        },
-        {
-            id: 2,
-            label: 'With Photos',
-            value: '89',
-            icon: '📷',
-            color: 'bg-blue-50'
-        },
-        {
-            id: 3,
-            label: 'This Month',
-            value: '18',
-            icon: '🗓️',
-            color: 'bg-pink-50'
-        }
-    ];
-
-    const getGreeting = () => {
-        const hour = new Date().getHours();
-        if (hour < 12) return { text: 'Good Morning', emoji: '☀️' };
-        if (hour < 18) return { text: 'Good Afternoon', emoji: '🌤️' };
-        return { text: 'Good Evening', emoji: '🌙' };
+  // 📘 Load recent memories
+  useEffect(() => {
+    const loadMemories = async () => {
+      const memories = await getUserMemories();
+      setRecentMemories(memories.slice(0, 3));
     };
+    loadMemories();
+  }, []);
 
-    const greeting = getGreeting();
+  // 🖼 Load all images for slideshow
+  useEffect(() => {
+    const loadImages = async () => {
+      const images = await getAllMemoryImages();
+      setAllImages(images);
+      console.log("Loaded slideshow images:", images.length);
+    };
+    loadImages();
+  }, []);
 
-    return (
-        <View className="flex-1 bg-gray-50">
-            <ScrollView
-                className="flex-1"
-                showsVerticalScrollIndicator={false}
-            >
-                {/* Header with Gradient */}
-                <LinearGradient
-                    colors={['#F0F4FF', '#F9FAFB']}
-                    className="pt-14 pb-6 px-6 rounded-b-3xl"
+  return (
+    <View className="flex-1">
+
+      {/* 🌸 Soft Gradient Background */}
+      <LinearGradient
+        colors={['#F3E8FF', '#FDF2F8', '#EEF2FF']}
+        style={{ position: "absolute", width: "100%", height: "100%" }}
+      />
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+
+        {/* 🖼 Memory Slideshow */}
+        {allImages.length > 0 && (
+          <View className="mt-16">
+            <Text className="text-lg font-semibold text-gray-900 px-6 mb-4">
+              Your Past Moments ✨
+            </Text>
+
+            <Carousel
+              width={width}
+              height={240}
+              autoPlay
+              autoPlayInterval={4000}
+              data={allImages}
+              scrollAnimationDuration={1000}
+              renderItem={({ item }) => (
+                <View
+                  style={{
+                    marginHorizontal: 20,
+                    borderRadius: 30,
+                    overflow: "hidden",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 8 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 15,
+                    elevation: 8,
+                  }}
                 >
-                    <Text className="text-3xl font-semibold text-gray-800 mb-1">
-                        {greeting.text}, {userName} {greeting.emoji}
-                    </Text>
-                    <Text className="text-base text-gray-500 mt-1">
-                        How are you feeling today?
-                    </Text>
-                </LinearGradient>
-
-                {/* Reflection Slider */}
-                <View className="mt-6 mb-4">
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        className="px-6"
-                        contentContainerStyle={{ paddingRight: 24 }}
-                    >
-                        {reflectionCards.map((card, index) => (
-                            <Pressable
-                                key={card.id}
-                                className="mr-4 active:opacity-80"
-                                style={{ width: 280 }}
-                            >
-                                <LinearGradient
-                                    colors={['#FFFFFF', '#F9FAFB']}
-                                    className="rounded-3xl p-6"
-                                    style={{
-                                        shadowColor: '#8B9FD9',
-                                        shadowOffset: { width: 0, height: 4 },
-                                        shadowOpacity: 0.08,
-                                        shadowRadius: 16,
-                                        elevation: 4
-                                    }}
-                                >
-                                    <View className="flex-row items-start">
-                                        <Text className="text-3xl mr-3">{card.emoji}</Text>
-                                        <Text className="text-base text-gray-700 flex-1 leading-6">
-                                            {card.text}
-                                        </Text>
-                                    </View>
-                                </LinearGradient>
-                            </Pressable>
-                        ))}
-                    </ScrollView>
+                  <Image
+                    source={{ uri: item }}
+                    style={{
+                      width: "100%",
+                      height: 240,
+                    }}
+                    resizeMode="cover"
+                  />
                 </View>
+              )}
+            />
+          </View>
+        )}
 
-                {/* Statistics Cards */}
-                <View className="px-6 mt-4">
-                    <Text className="text-lg font-semibold text-gray-800 mb-4">
-                        Your Journey
-                    </Text>
-                    <View className="flex-row justify-between">
-                        {statistics.map((stat) => (
-                            <View
-                                key={stat.id}
-                                className={`${stat.color} rounded-2xl p-4 flex-1 mx-1`}
-                                style={{
-                                    shadowColor: '#8B9FD9',
-                                    shadowOffset: { width: 0, height: 2 },
-                                    shadowOpacity: 0.06,
-                                    shadowRadius: 8,
-                                    elevation: 2
-                                }}
-                            >
-                                <Text className="text-2xl mb-2">{stat.icon}</Text>
-                                <Text className="text-2xl font-bold text-gray-800 mb-1">
-                                    {stat.value}
-                                </Text>
-                                <Text className="text-xs text-gray-600">
-                                    {stat.label}
-                                </Text>
-                            </View>
-                        ))}
-                    </View>
-                </View>
+        {/* 💎 Hero Section */}
+        <View className="mt-14 px-6">
+          <View
+            style={{
+              backgroundColor: "rgba(255,255,255,0.85)",
+              borderRadius: 40,
+              padding: 28,
+              shadowColor: "#7C3AED",
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.2,
+              shadowRadius: 20,
+              elevation: 10,
+            }}
+          >
+            <Text className="text-3xl font-bold text-gray-900">
+              Your memories are your treasure.
+            </Text>
 
-                {/* Recent Memories */}
-                <View className="px-6 mt-8 pb-6">
-                    <View className="flex-row justify-between items-center mb-4">
-                        <Text className="text-lg font-semibold text-gray-800">
-                            Recent Memories
-                        </Text>
-                        <TouchableOpacity>
-                            <Text onPress={() => { router.push('/allMemories/allMemories') }} className="text-purple-600 text-sm font-medium">
-                                See all
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
+            <Text className="text-gray-600 mt-4 text-base">
+              Reflect, grow, and protect your personal story
+              in your private emotional space.
+            </Text>
 
-                    {recentMemories.map((memory) => (
-                        <Pressable
-                            onPress={() =>
-                                router.push({
-                                    pathname: "/diary/book",
-                                    params: { startId: memory.id },
-                                })
-                            }
-                            key={memory.id}
-                            className="bg-white rounded-3xl p-5 mb-4 active:opacity-90"
-                            style={{
-                                shadowColor: '#8B9FD9',
-                                shadowOffset: { width: 0, height: 4 },
-                                shadowOpacity: 0.08,
-                                shadowRadius: 12,
-                                elevation: 3
-                            }}
-                        >
-                            <View className="flex-row">
-                                {/* Content */}
-                                <View className="flex-1 pr-3">
-                                    <Text className="text-base font-semibold text-gray-800 mb-2">
-                                        {memory.title
-                                        }
-                                    </Text>
-                                    <Text
-                                        className="text-sm text-gray-600 leading-5 mb-3"
-                                        numberOfLines={2}
-                                    >
-                                        {memory.text}
-                                    </Text>
-                                    <Text className="text-xs text-gray-400">
-                                        {memory?.createdAt.toDate().toLocaleDateString() ?? ""}
-                                    </Text>
-                                </View>
-
-                                {/* Image Thumbnail */}
-                                {memory.images && memory.images.length > 0 && (
-                                    <View
-                                        className="bg-gray-200 rounded-2xl overflow-hidden"
-                                        style={{ width: 80, height: 80 }}
-                                    >
-                                        <Image
-                                            source={{ uri: memory.images[0] }}
-                                            style={{ width: "100%", height: "100%" }}
-                                            resizeMode="cover"
-                                        />
-                                    </View>
-                                )}
-                            </View>
-                        </Pressable>
-                    ))}
-                </View>
-
-                {/* Floating Action Button Area */}
-                <View className="h-24" />
-            </ScrollView>
+            <Pressable
+              onPress={() => router.push("/(dashbord)/save")}
+              style={{
+                marginTop: 20,
+                backgroundColor: "#7C3AED",
+                paddingVertical: 12,
+                paddingHorizontal: 20,
+                borderRadius: 25,
+                alignSelf: "flex-start",
+              }}
+            >
+              <Text style={{ color: "white", fontWeight: "600" }}>
+                Start Writing ✍️
+              </Text>
+            </Pressable>
+          </View>
         </View>
-    );
+
+        {/* 📘 Recent Memories */}
+        <View className="mt-14 px-6 pb-32">
+          <Text className="text-xl font-semibold text-gray-900 mb-6">
+            Recent Memories
+          </Text>
+
+          {recentMemories.map((memory) => (
+            <Pressable
+              key={memory.id}
+              onPress={() =>
+                router.push({
+                  pathname: "/diary/book",
+                  params: { startId: memory.id },
+                })
+              }
+              style={{
+                backgroundColor: "rgba(255,255,255,0.9)",
+                borderRadius: 30,
+                padding: 20,
+                marginBottom: 20,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.1,
+                shadowRadius: 12,
+                elevation: 6,
+              }}
+            >
+              <Text className="text-lg font-semibold text-gray-900">
+                {memory.title}
+              </Text>
+
+              <Text numberOfLines={2} className="text-gray-500 mt-3">
+                {memory.text}
+              </Text>
+
+              {memory.images?.length > 0 && (
+                <Image
+                  source={{ uri: memory.images[0] }}
+                  style={{
+                    width: width - 80,
+                    height: 160,
+                    borderRadius: 25,
+                    marginTop: 14,
+                  }}
+                />
+              )}
+
+              <Text className="text-gray-400 text-xs mt-4">
+                {memory?.createdAt?.toDate()?.toLocaleDateString()}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </ScrollView>
+
+      {/* ➕ Floating Action Button */}
+      <Pressable
+        onPress={() => router.push("/(dashbord)/save")}
+        style={{
+          position: "absolute",
+          bottom: 30,
+          right: 24,
+          backgroundColor: "#7C3AED",
+          width: 70,
+          height: 70,
+          borderRadius: 40,
+          justifyContent: "center",
+          alignItems: "center",
+          shadowColor: "#7C3AED",
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.4,
+          shadowRadius: 20,
+          elevation: 15,
+        }}
+      >
+        <Text style={{ color: "white", fontSize: 30 }}>+</Text>
+      </Pressable>
+
+    </View>
+  );
 };
 
 export default DashboardScreen;
